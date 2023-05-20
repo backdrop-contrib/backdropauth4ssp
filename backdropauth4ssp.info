@@ -3,3 +3,5 @@ description = "This module tightly integrates the SimpleSAMLphp Identity Provide
 backdrop = 1.x
 type = module
 configure = admin/config/people/backdropauth4ssp
+
+dependencies[] = entity_plus
