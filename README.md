@@ -27,7 +27,7 @@ The configuration of this module is fairly straight forward. You will need to kn
 ## Credits
 
 ### Drupal maintainers
-- Steve Moitozo [geekwisdom](http://drupal.org/user/1662)
+- Steve Moitozo [geekwisdom](http://drupal.org/user/1662). The original Drupal module is named [drupalauth4ssp](https://www.drupal.org/project/drupalauth4ssp)
 
 ### Backdrop maintainer
 - [argiepiano](https://github.com/argiepiano)
