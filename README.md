@@ -28,7 +28,6 @@ The configuration of this module is fairly straight forward. You will need to kn
 
 ### Drupal maintainers
 - Steve Moitozo [geekwisdom](http://drupal.org/user/1662)
-- Ported to Backdrop CMS by [argiepiano](https://github.com/argiepiano)
 
 ### Backdrop maintainer
 - [argiepiano](https://github.com/argiepiano)
