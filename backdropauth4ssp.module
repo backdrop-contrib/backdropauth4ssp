@@ -1,24 +1,35 @@
 <?php
 /**
  * @file
- * DrupalAuth For simpleSAMLphp module.
+ * BackdropAuth For simpleSAMLphp module.
  *
- * This module tightly integrates the SimpleSAMLphp Identity Provider login experience with a Drupal site.
+ * This module tightly integrates the SimpleSAMLphp Identity Provider login experience with a Backdrop site.
  */
+
+/**
+ * Implements hook_config_info().
+ */
+function backdropauth4ssp_config_info() {
+  $prefixes['backdropauth4ssp.settings'] = array(
+    'label' => t('BackdropAuth for SimpleSAMLphp settings'),
+    'group' => t('BackdropAuth'),
+  );
+  return $prefixes;
+}
 
 /**
  * Implements hook_menu().
  */
-function drupalauth4ssp_menu() {
+function backdropauth4ssp_menu() {
   $items = array();
 
-  $items['admin/config/people/drupalauth4ssp'] = array(
-    'title' => 'Drupalauth for SimpleSAMLphp Settings',
-    'description' => 'Control the various settings of the drupalauth4ssp module',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('drupalauth4ssp_settings'),
-    'access arguments' => array('administer drupalauth4ssp'),
-    'file' => 'drupalauth4ssp.admin.inc',
+  $items['admin/config/people/backdropauth4ssp'] = array(
+    'title' => 'BackdropAuth for SimpleSAMLphp Settings',
+    'description' => 'Control the various settings of the backdropauth4ssp module',
+    'page callback' => 'backdrop_get_form',
+    'page arguments' => array('backdropauth4ssp_settings'),
+    'access arguments' => array('administer backdropauth4ssp'),
+    'file' => 'backdropauth4ssp.admin.inc',
     'type' => MENU_LOCAL_TASK | MENU_NORMAL_ITEM,
   );
 
@@ -26,20 +37,15 @@ function drupalauth4ssp_menu() {
 }
 
 /**
- * Implements hook_admin_paths().
- */
-function drupalauth4ssp_admin_paths() {
-  return array('admin/config/people/drupalauth4ssp' => TRUE);
-}
-
-/**
  * Implements hook_permission().
  */
-function drupalauth4ssp_permission() {
+function backdropauth4ssp_permission() {
   return array(
-    'administer drupalauth4ssp' => array(
-      'title' => t('Administer drupalauth4ssp'),
-      'description' => t('Warning: Give to trusted roles only; this permission has security implications.'),
+    'administer backdropauth4ssp' => array(
+      'title' => t('Administer BackdropAuth4ssp'),
+      'description' => t('Administer settings for BackdropAuth for SimpleSAMLphp.'),
+      'restrict access' => TRUE,
+      'warning' => 'Can change important settings for the IdP settings for SimpleSAMLphp',
     ),
   );
 }
@@ -47,21 +53,21 @@ function drupalauth4ssp_permission() {
 /**
  * Implements hook_user_login().
  */
-function drupalauth4ssp_user_login(&$edit, $account) {
-  _drupalauth4ssp_exec($account);
+function backdropauth4ssp_user_login(&$edit, $account) {
+  _backdropauth4ssp_exec($account);
 }
 
 /**
  * Implements hook_user_logout().
  */
-function drupalauth4ssp_user_logout($account) {
+function backdropauth4ssp_user_logout($account) {
   // Get the configuration information from SimpleSAMLphp.
-  $ssp_config = _drupalauth4ssp_get_simplesamlphp_config();
+  $ssp_config = _backdropauth4ssp_get_simplesamlphp_configuration();
 
   // If we don't have configuration, exit without doing anything.
   if (!is_array($ssp_config)) {
     // The least we can do is write something to the watchdog so someone will know what's happening.
-    watchdog('drupalauth4ssp', 'Could not use drupalauth for %name, could not get the SimpleSAMLphp configuration.', array('%name' => $account->name));
+    watchdog('backdropauth4ssp', 'Could not use backdropauth for %name, could not get the SimpleSAMLphp configuration.', array('%name' => $account->name));
     return;
   }
 
@@ -84,23 +90,23 @@ function drupalauth4ssp_user_logout($account) {
 
   // If the ReturnTo URL is present, send the user to the URL.
   if (isset($_GET['ReturnTo']) && $_GET['ReturnTo']) {
-    $destination = &drupal_static(__FUNCTION__);
+    $destination = &backdrop_static(__FUNCTION__);
     $destination = $_GET['ReturnTo'];
 
     // Check the ReturnTo if it's in the allowed list.
-    if (!drupalauth4ssp_valid_returnto_parameter()) {
+    if (!backdropauth4ssp_valid_returnto_parameter()) {
       $destination = FALSE;
     }
   }
 }
 
 /**
- * Implements hook_drupal_goto_alter().
+ * Implements hook_backdrop_goto_alter().
  */
-function drupalauth4ssp_drupal_goto_alter(&$path, &$options, &$http_response_code) {
-  $destination = &drupal_static('drupalauth4ssp_user_logout');
+function backdropauth4ssp_backdrop_goto_alter(&$path, &$options, &$http_response_code) {
+  $destination = &backdrop_static('backdropauth4ssp_user_logout');
   if (!$path && $destination) {
-    drupal_goto($destination);
+    backdrop_goto($destination);
   }
 }
 
@@ -108,20 +114,20 @@ function drupalauth4ssp_drupal_goto_alter(&$path, &$options, &$http_response_cod
 /**
  * Implements hook_user_view().
  */
-function drupalauth4ssp_user_view($account, $view_mode, $langcode) {
+function backdropauth4ssp_user_view($account) {
   global $user;
   if ($user->uid == $account->uid) {
-    _drupalauth4ssp_exec($account);
+    _backdropauth4ssp_exec($account);
   }
 }
 
 /**
  * Returns the SimpleSAMLphp configuration.
  */
-function _drupalauth4ssp_get_simplesamlphp_config() {
+function _backdropauth4ssp_get_simplesamlphp_configuration() {
   $config = NULL;
 
-  if (!drupalauth4ssp_include_simplesamlphp_library()) {
+  if (!backdropauth4ssp_include_simplesamlphp_library()) {
     return;
   }
 
@@ -140,10 +146,10 @@ function _drupalauth4ssp_get_simplesamlphp_config() {
   unset($ssp_config);
 
   $ssp_authsources = SimpleSAML_Configuration::getConfig('authsources.php');
-  $authsource = $ssp_authsources->getValue(drupalauth4ssp_get_simplesamlphp_authsource());
+  $authsource = $ssp_authsources->getValue(backdropauth4ssp_get_simplesamlphp_authsource());
 
   // get cookie_name from specified authsource
-  $config['cookie_name'] = !empty($authsource['cookie_name']) ? $authsource['cookie_name'] : 'drupalauth4ssp';
+  $config['cookie_name'] = !empty($authsource['cookie_name']) ? $authsource['cookie_name'] : 'backdropauth4ssp';
 
   unset($ssp_authsources);
 
@@ -161,28 +167,28 @@ function _drupalauth4ssp_get_simplesamlphp_config() {
 }
 
 /**
- * Sets a special cookie for drupalauth4ssp.
+ * Sets a special cookie for backdropauth4ssp.
  */
-function _drupalauth4ssp_exec($account) {
+function _backdropauth4ssp_exec($account) {
 
   // Get the configuration information from SimpleSAMLphp.
-  $ssp_config = _drupalauth4ssp_get_simplesamlphp_config();
+  $ssp_config = _backdropauth4ssp_get_simplesamlphp_configuration();
 
   // If we don't have configuration, exit without doing anything.
   if (!is_array($ssp_config)) {
     // The least we can do is write something to the watchdog so someone will know what's happening.
-    watchdog('drupalauth4ssp', 'Could not use drupalauth for %name, could not get the SimpleSAMLphp configuration.', array('%name' => $account->name));
+    watchdog('backdropauth4ssp', 'Could not use backdropauth for %name, could not get the SimpleSAMLphp configuration.', array('%name' => $account->name));
     return;
   }
 
   // Store the authenticated user's uid in the cookie (create a validation hash to ensure nobody tampers with the uid).
-  setcookie($ssp_config['cookie_name'], sha1($ssp_config['secretsalt'] . $account->uid) . ':' . $account->uid, 0, $ssp_config['baseurlpath']);
+  setcookie($ssp_config['cookie_name'], sha1($ssp_config['secretsalt'] . $account->uid) . ':' . $account->uid, 0, $ssp_config['baseurlpath'], '.bdentity.localhost');
 
   // If the ReturnTo URL is present, send the user to the URL.
   if (isset($_GET['ReturnTo']) && $_GET['ReturnTo']) {
 
     // Check the ReturnTo if it's in the allowed list.
-    if (!drupalauth4ssp_valid_returnto_parameter()) {
+    if (!backdropauth4ssp_valid_returnto_parameter()) {
       return;
     }
     header('Location: ' . $_GET['ReturnTo']);
@@ -197,9 +203,9 @@ function _drupalauth4ssp_exec($account) {
  * @return bool
  *   Display whether library has been included or not.
  */
-function drupalauth4ssp_include_simplesamlphp_library() {
+function backdropauth4ssp_include_simplesamlphp_library() {
   // Get the simplesamlphp session.
-  $basedir = drupalauth4ssp_get_simplesamlphp_library_dir();
+  $basedir = backdropauth4ssp_get_simplesamlphp_library_dir();
   $autoload_file = $basedir . '/lib/_autoload.php';
 
   // If variable is not defined or dir is not exist.
@@ -214,15 +220,15 @@ function drupalauth4ssp_include_simplesamlphp_library() {
 /**
  * Returns "installdir" variable.
  */
-function drupalauth4ssp_get_simplesamlphp_library_dir() {
-  return variable_get('drupalauth4ssp_installdir', NULL);
+function backdropauth4ssp_get_simplesamlphp_library_dir() {
+  return config_get('backdropauth4ssp.settings', 'backdropauth4ssp_installdir');
 }
 
 /**
- * Returns "drupalauth4ssp_authsource" variable.
+ * Returns "backdropauth4ssp_authsource" variable.
  */
-function drupalauth4ssp_get_simplesamlphp_authsource() {
-  return variable_get('drupalauth4ssp_authsource', NULL);
+function backdropauth4ssp_get_simplesamlphp_authsource() {
+  return config_get('backdropauth4ssp.settings', 'backdropauth4ssp_authsource');
 }
 
 /**
@@ -231,6 +237,6 @@ function drupalauth4ssp_get_simplesamlphp_authsource() {
  * @return bool
  *   True if ReturnTo parameter is in the allowed list, False otherwise.
  */
-function drupalauth4ssp_valid_returnto_parameter() {
-  return drupal_match_path($_GET['ReturnTo'], variable_get('drupalauth4ssp_returnto_list', ''));
+function backdropauth4ssp_valid_returnto_parameter() {
+  return backdrop_match_path($_GET['ReturnTo'], config_get('backdropauth4ssp.settings', 'backdropauth4ssp_returnto_list'));
 }

@@ -1,0 +1,5 @@
+name = "BackdropAuth for SimpleSAMLphp"
+description = "This module tightly integrates the SimpleSAMLphp Identity Provider login experience with a Backdrop site."
+backdrop = 1.x
+type = module
+configure = admin/config/people/backdropauth4ssp

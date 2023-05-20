@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Hooks provided by the DrupalAuth for simpleSAMLphp.
+ * Hooks provided by the BackdropAuth for simpleSAMLphp.
  */
 
 /**
@@ -18,7 +18,7 @@
  * @param object $user
  *   User object.
  */
-function hook_drupalauth_attributes_alter(&$attributes, &$user) {
+function hook_backdropaut_attributes_alter(&$attributes, &$user) {
   $attributes['my_attribute'] = 'value';
 }
 

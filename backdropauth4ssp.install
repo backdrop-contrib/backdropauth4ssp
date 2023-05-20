@@ -1,0 +1,24 @@
+<?php
+/**
+ * @file
+ * Install/Uninstall functions file for the backdropauth4ssp module.
+ */
+
+/**
+ * Implements of hook_uninstall().
+ */
+function backdropauth4ssp_uninstall() {
+  // Remove the created system variables.
+  // TODO This variable was probably removed in Backdrop without replacement.
+  variable_del('backdropauth4ssp_installdir');
+  // TODO This variable was probably removed in Backdrop without replacement.
+  variable_del('backdropauth4ssp_authsource');
+}
+
+/**
+ * Add new setting for redirect restriction.
+ */
+function backdropauth4ssp_update_7000() {
+  // TODO This variable was probably removed in Backdrop without replacement.
+  variable_get('backdropauth4ssp_returnto_list', '*');
+}
