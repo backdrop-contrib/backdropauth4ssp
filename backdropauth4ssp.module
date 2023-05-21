@@ -75,7 +75,7 @@ function backdropauth4ssp_user_logout($account) {
   setcookie($ssp_config['cookie_name'], sha1($ssp_config['secretsalt'] . $account->uid) . ':' . $account->uid, time() - 3600, $ssp_config['baseurlpath']);
 
   // Invalidate SimpleSAML session by expiring it.
-  $session = SimpleSAML_Session::getSessionFromRequest();
+  $session = \SimpleSAML\Session::getSessionFromRequest();
   // Backward compatibility with SimpleSAMP older than 1.14.
   // SimpleSAML_Session::getAuthority() has been removed in 1.14.
   // @see https://simplesamlphp.org/docs/development/simplesamlphp-upgrade-notes-1.14
@@ -131,7 +131,7 @@ function _backdropauth4ssp_get_simplesamlphp_configuration() {
     return;
   }
 
-  $ssp_config = SimpleSAML_Configuration::getInstance();
+  $ssp_config = \SimpleSAML\Configuration::getInstance();
 
   if (!is_object($ssp_config)) {
     return;
@@ -145,11 +145,15 @@ function _backdropauth4ssp_get_simplesamlphp_configuration() {
 
   unset($ssp_config);
 
-  $ssp_authsources = SimpleSAML_Configuration::getConfig('authsources.php');
+  $ssp_authsources = \SimpleSAML\Configuration::getConfig('authsources.php');
   $authsource = $ssp_authsources->getValue(backdropauth4ssp_get_simplesamlphp_authsource());
 
   // get cookie_name from specified authsource
   $config['cookie_name'] = !empty($authsource['cookie_name']) ? $authsource['cookie_name'] : 'backdropauth4ssp';
+
+  if (!empty($authsource['cookie_domain'])) {
+    $config['cookie_domain'] = $authsource['cookie_domain'];
+  }
 
   unset($ssp_authsources);
 
@@ -182,7 +186,8 @@ function _backdropauth4ssp_exec($account) {
   }
 
   // Store the authenticated user's uid in the cookie (create a validation hash to ensure nobody tampers with the uid).
-  setcookie($ssp_config['cookie_name'], sha1($ssp_config['secretsalt'] . $account->uid) . ':' . $account->uid, 0, $ssp_config['baseurlpath'], '.bdentity.localhost');
+  $domain = !empty($ssp_config['cookie_domain']) ? $ssp_config['cookie_domain'] : FALSE;
+  setcookie($ssp_config['cookie_name'], sha1($ssp_config['secretsalt'] . $account->uid) . ':' . $account->uid, 0, $ssp_config['baseurlpath'], $domain);
 
   // If the ReturnTo URL is present, send the user to the URL.
   if (isset($_GET['ReturnTo']) && $_GET['ReturnTo']) {
