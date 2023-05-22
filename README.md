@@ -14,7 +14,7 @@ The backdropauth4ssp provides a tightly integrated login experience, sending una
 3. Install [backdropauth](https://github.com/argiepiano/simplesamlphp-module-backdropauth). Note: backdropauth is a module of SimpleSAMLphp (NOT a Backdrop module). It's needed to make your Backdrop site into an identity provider (IdP)
 4. Configure SimpleSAMLphp to use something other than phpsession for session storage, e.g., SQL or memcache (See: `store.type` in `simplesamlphp/config/config.php`).
 
-IMPORTANT: For detailed configuration steps for SimpleSAMLphp, backdropauth and this module, please visit this module's wiki.
+IMPORTANT: For detailed configuration steps for SimpleSAMLphp, backdropauth and this module, please visit this module's [wiki](https://github.com/backdrop-contrib/backdropauth4ssp/wiki/Sample-configuration-for-backdropauth4ssp).
 
 ## Configuration
 
